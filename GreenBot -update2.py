@@ -1,12 +1,12 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 import random
 
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(command_prefix="G", intents=intents)
+bot = commands.Bot(command_prefix=".", intents=intents)
 
-#lista de materiales que suelen contaminar más
+# Lista de artículos contaminantes
 articulos = ("Los artículos de uso diario que más contaminan suelen ser aquellos que generan residuos plásticos, electrónicos y productos desechables. Algunos de los más comunes son:\n"
              "1. Botellas de plástico: Las botellas de agua o refrescos de plástico son uno de los residuos más abundantes y tardan cientos de años en degradarse, contaminando océanos y suelos.\n"
              "2. Envases y empaques de comida: Los envases de comida rápida, envoltorios de snacks y plásticos de un solo uso (como cubiertos, pajitas y vasos) generan grandes cantidades de residuos.\n"
@@ -15,12 +15,12 @@ articulos = ("Los artículos de uso diario que más contaminan suelen ser aquell
              )
 
 @bot.command()
-async def materialesContaminantes(ctx):
+async def materialesConta(ctx):
     await ctx.send(f"{articulos}\n\nEstos son algunos de los artículos de uso diario que suelen contaminar más.")
 
-
+# Información general sobre la contaminación
 @bot.command()
-async def contaminacionINFO(ctx):
+async def info(ctx):
     await ctx.send("La contaminación es un problema que cada día es más preocupante. Según la OMS, el 99% de la población mundial respira aire insalubre, esto debido a los gases que sueltan los carros, descomposición de materiales, etc...")
 
 # Lista de ideas de reciclaje
@@ -40,9 +40,35 @@ async def reciclar(ctx):
     idea = random.choice(ideas)
     await ctx.send(f"🌱 Idea de reciclaje: {idea}")
 
+# Ideas de reciclaje automáticas cada cierto tiempo
+@tasks.loop(hours=10)
+async def enviar_idea_reciclaje():
+    canal = bot.get_channel("id del canal")  # Hay que poner la id del canal de discord sin las comillas
+    idea = random.choice(ideas)
+    await canal.send(f"♻️ ¡Aquí tienes una nueva idea de reciclaje! 🌿: {idea}")
+
+# Comienza la tarea automática de envío de ideas de reciclaje
+@bot.event
+async def on_ready():
+    print(f"Conectado como {bot.user}")
+    enviar_idea_reciclaje.start()
+
 @bot.command()
 async def ayudar(ctx):
     await ctx.send("Para ayudar a cuidar el planeta puedes optar por seguir las reglas de las 3 R: Reducir, Reutilizar y Reciclar. También puedes unirte a ONGs centradas en el medio ambiente. Recuerda que cada acción es de gran aporte para cuidar nuestro planeta, tu hogar y el de muchos más")
 
+# Ejemplo de materiales ecológicos
+materiales_eco = [
+    "Bambú: Un recurso renovable y biodegradable.",
+    "Algodón orgánico: Cultivado sin pesticidas y productos químicos dañinos.",
+    "Vidrio reciclado: Material duradero y reutilizable.",
+    "Corcho: Extraído de árboles sin dañarlos, es resistente y sostenible.",
+    "Madera certificada: Procedente de bosques gestionados de manera sostenible."
+]
 
-bot.run("token")
+@bot.command()
+async def materialesEco(ctx):
+    material = random.choice(materiales_eco)
+    await ctx.send(f"🌿 Material ecológico: {material}")
+
+bot.run("Tu token aquí, hermos@")
